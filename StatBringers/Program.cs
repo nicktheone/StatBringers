@@ -4,9 +4,13 @@ namespace StatBringers
 {
     class Program
     {
-        static void Main(string[] args)
+        static async System.Threading.Tasks.Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var lodestone = new Lodestone();
+            //Console.WriteLine(await lodestone.GetCharacterInfo(12213377, ""));
+            //Console.WriteLine(await lodestone.GetHeaders(12213377, ""));
+
+            Console.ReadLine();
         }
     }
 }
