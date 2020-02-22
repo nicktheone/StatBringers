@@ -24,7 +24,7 @@ namespace StatBringers
         public int LastCharacterIdChecked { get { return GetLastCharacterIdChecked(); } }
         public List<int> ValidCharacterIdsList { get { return GetValidCharacterIdsList(); } }
         private readonly HttpClient httpClient;
-        private ConcurrentBag<string> ValidCharacterIds { get; set; }
+        private ConcurrentBag<int> ValidCharactersChecked { get; set; }
 
         public Lodestone()
         {
@@ -32,7 +32,7 @@ namespace StatBringers
             {
                 BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/")
             };
-            ValidCharacterIds = new ConcurrentBag<string>();
+            ValidCharactersChecked = new ConcurrentBag<int>();
         }
 
         public void Test()
@@ -66,7 +66,7 @@ namespace StatBringers
 
             if (result.StatusCode == HttpStatusCode.OK)
             {
-                ValidCharacterIds.Add(CharacterId.ToString());
+                ValidCharactersChecked.Add(CharacterId);
             }
         }
 
@@ -92,15 +92,16 @@ namespace StatBringers
 
         private void WriteValidCharacterIdsList() 
         {
-            File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", ValidCharacterIds);
-            ValidCharacterIds.Clear();
+            var list = ValidCharactersChecked.ToList();
+            list.Sort();
+            File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", list.Select(x => x.ToString()));
+            ValidCharactersChecked.Clear();
         }
 
         private List<int> GetValidCharacterIdsList()
         {
             var output = new List<int>();
             output = File.ReadAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt").Select(int.Parse).ToList();
-            output.Sort();
             return output;
         }
     }
