@@ -14,8 +14,16 @@ namespace StatBringers
         {
             var lodestone = new Lodestone();
 
-            lodestone.Test();
+            Console.WriteLine("Press ESC to stop");
+            do
+            {
+                while (!Console.KeyAvailable)
+                {
+                    lodestone.Test();
+                }
+            } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
 
+            Console.WriteLine("\nValid Character IDs");
             foreach (var item in lodestone.ValidIds.OrderBy(x => x))
             {
                 Console.WriteLine(item);

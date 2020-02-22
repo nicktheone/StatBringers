@@ -36,17 +36,13 @@ namespace StatBringers
         {
             var tasks = new ConcurrentBag<Task>();
             var lastId = GetLastCharacterIdChecked();
-            for (int j = 0; j < 5; j++)
+            Parallel.For(lastId + 1, lastId + 31, i =>
             {
-                Parallel.For(lastId + 1, lastId + 31, i =>
-                {
-                    tasks.Add(CheckIfCharacterExistsAsync(i));
-                });
-                Task.WaitAll(tasks.ToArray());
-                lastId += 30;
-                Console.WriteLine("STEP");
-            }
-            Console.WriteLine("FINE");
+                tasks.Add(CheckIfCharacterExistsAsync(i));
+            });
+            Task.WaitAll(tasks.ToArray());
+            lastId += 30;
+            Console.WriteLine("STEP");
 
             WriteLastCharacterIdChecked(lastId);
         }
