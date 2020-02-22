@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +21,7 @@ namespace StatBringers
         /// </TODO>
 
         private readonly HttpClient httpClient;
+        public ConcurrentBag<int> ValidIds { get; set; }
 
         public Lodestone()
         {
@@ -25,23 +29,65 @@ namespace StatBringers
             {
                 BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/")
             };
+            ValidIds = new ConcurrentBag<int>();
         }
 
-        private async Task<string> GetCharacterInfo(int CharacterId, string page)
+        public void Test()
         {
-            string address = $"{ CharacterId }/{ page }";
-            var content = await httpClient.GetStringAsync(address);
-            return content;
+            var tasks = new ConcurrentBag<Task>();
+            var lastId = GetLastCharacterIdChecked();
+            for (int j = 0; j < 5; j++)
+            {
+                Parallel.For(lastId + 1, lastId + 31, i =>
+                {
+                    tasks.Add(CheckIfCharacterExistsAsync(i));
+                });
+                Task.WaitAll(tasks.ToArray());
+                lastId += 30;
+                Console.WriteLine("STEP");
+            }
+            Console.WriteLine("FINE");
+
+            WriteLastCharacterIdChecked(lastId);
         }
 
-        private async Task<HttpResponseMessage> GetHeaders(int CharacterId, string page)
+        private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
         {
             string address = $"{ CharacterId }/{ page }";
-            var result = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, address));
-            //// OK (200) for existing character, NotFound (404) for missing character 
-            //var result = await client.GetAsync(address);
-            //var status = result.StatusCode;
-            return result;
+            var content = httpClient.GetStringAsync(address);
+            return await content;
+        }
+
+        private async Task CheckIfCharacterExistsAsync(int CharacterId)
+        {
+            string address = $"{ CharacterId }";
+            var result = await httpClient.GetAsync(address);
+            Console.WriteLine($"{ CharacterId } - { result.StatusCode }");
+
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                ValidIds.Add(CharacterId);
+            }
+        }
+
+        private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
+        {
+            File.WriteAllText($"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt", LastCharacterIdChecked.ToString());
+        }
+
+        private int GetLastCharacterIdChecked()
+        {
+            var path = $"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt";
+            if (File.Exists(path))
+            {
+                var output = File.ReadAllText(path);
+                return int.Parse(output);
+            }
+            else
+            {
+                return 0;
+            }
+            
         }
     }
 }

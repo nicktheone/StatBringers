@@ -1,14 +1,25 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StatBringers
 {
     class Program
     {
-        static async System.Threading.Tasks.Task Main(string[] args)
+        static void Main(string[] args)
         {
             var lodestone = new Lodestone();
-            //Console.WriteLine(await lodestone.GetCharacterInfo(12213377, ""));
-            //Console.WriteLine(await lodestone.GetHeaders(12213377, ""));
+
+            lodestone.Test();
+
+            foreach (var item in lodestone.ValidIds.OrderBy(x => x))
+            {
+                Console.WriteLine(item);
+            }
 
             Console.ReadLine();
         }
