@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -20,8 +21,10 @@ namespace StatBringers
         /// Get a list of unique IDs from Lodestone
         /// </TODO>
 
+        public int LastCharacterIdChecked { get { return GetLastCharacterIdChecked(); } }
+        public List<int> ValidCharacterIdsList { get { return GetValidCharacterIdsList(); } }
         private readonly HttpClient httpClient;
-        public ConcurrentBag<int> ValidIds { get; set; }
+        private ConcurrentBag<string> ValidCharacterIds { get; set; }
 
         public Lodestone()
         {
@@ -29,7 +32,7 @@ namespace StatBringers
             {
                 BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/")
             };
-            ValidIds = new ConcurrentBag<int>();
+            ValidCharacterIds = new ConcurrentBag<string>();
         }
 
         public void Test()
@@ -45,6 +48,7 @@ namespace StatBringers
             Console.WriteLine("STEP");
 
             WriteLastCharacterIdChecked(lastId);
+            WriteValidCharacterIdsList();
         }
 
         private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
@@ -62,7 +66,7 @@ namespace StatBringers
 
             if (result.StatusCode == HttpStatusCode.OK)
             {
-                ValidIds.Add(CharacterId);
+                ValidCharacterIds.Add(CharacterId.ToString());
             }
         }
 
@@ -84,6 +88,20 @@ namespace StatBringers
                 return 0;
             }
             
+        }
+
+        private void WriteValidCharacterIdsList() 
+        {
+            File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", ValidCharacterIds);
+            ValidCharacterIds.Clear();
+        }
+
+        private List<int> GetValidCharacterIdsList()
+        {
+            var output = new List<int>();
+            output = File.ReadAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt").Select(int.Parse).ToList();
+            output.Sort();
+            return output;
         }
     }
 }
