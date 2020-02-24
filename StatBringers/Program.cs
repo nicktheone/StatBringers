@@ -17,23 +17,6 @@ namespace StatBringers
             {
                 showMenu = MainMenu();
             }
-
-            //Console.WriteLine("Press ESC to stop");
-            //do
-            //{
-            //    while (!Console.KeyAvailable)
-            //    {
-            //        lodestone.Test();
-            //    }
-            //} while (Console.ReadKey(true).Key != ConsoleKey.Escape);
-
-            //Console.WriteLine("\nValid Character IDs");
-            //foreach (var item in lodestone.ValidIds.OrderBy(x => x))
-            //{
-            //    Console.WriteLine(item);
-            //}
-
-            //Console.ReadLine();
         }
 
         private static bool MainMenu()
@@ -44,7 +27,7 @@ namespace StatBringers
             Console.WriteLine($"1) Start a valid Character ID scan (last checked: { lodestone.LastCharacterIdChecked })");
             Console.WriteLine("2) Get the list of valid Character IDs");
             Console.WriteLine("3) Get the list of Character IDs to recheck");
-            Console.WriteLine("4) Recheck the list of IDs");
+            Console.WriteLine($"4) Recheck the list of IDs (remaining IDs: { lodestone.CharactersToRecheckIdsList.Count })");
             Console.WriteLine("5) Exit");
 
             switch (Console.ReadLine())
@@ -60,7 +43,9 @@ namespace StatBringers
                         {
                             lodestone.Test();
                         }
-                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);                   
+                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+
+                    Console.WriteLine();
 
                     return true;
 
@@ -93,15 +78,26 @@ namespace StatBringers
                     return true;
 
                 case "4":
-                    Console.WriteLine();
-                    Console.WriteLine("Press ESC to stop");
-                    Console.WriteLine();
-
                     do
                     {
                         while (!Console.KeyAvailable)
                         {
-                            lodestone.AnalyzeValidCharacterIdsListAsync(lodestone.CharactersToRecheckIdsList);
+                            if (lodestone.CharactersToRecheckIdsList.Count > 0)
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine("Press ESC to stop");
+                                Console.WriteLine();
+
+                                lodestone.AnalyzeValidCharacterIdsListAsync();
+                                return true;
+                            }
+                            else
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine("No IDs to recheck");
+                                Console.WriteLine();
+                                return true;
+                            }
                         }
                     } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
 

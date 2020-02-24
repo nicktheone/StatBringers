@@ -16,8 +16,9 @@ namespace StatBringers
         public List<int> ValidCharacterIdsList { get; set; }
         public List<int> CharactersToRecheckIdsList { get ; }
         private readonly HttpClient httpClient;
-        private ConcurrentBag<int> ValidCharactersChecked { get; set; }
-        private ConcurrentBag<int> CharactersToRecheck { get; set; }
+        private int LastCharacterIdReChecked { get; set; }
+        private ConcurrentBag<int> ValidCharactersChecked { get; set; } = new ConcurrentBag<int>();
+        private ConcurrentBag<int> CharactersToRecheck { get; set; } = new ConcurrentBag<int>();
 
         public Lodestone()
         {
@@ -26,8 +27,6 @@ namespace StatBringers
                 BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/"),
                 Timeout = TimeSpan.FromSeconds(10)
             };
-            ValidCharactersChecked = new ConcurrentBag<int>();
-            CharactersToRecheck = new ConcurrentBag<int>();
 
             LastCharacterIdChecked = GetLastCharacterIdChecked();
             ValidCharacterIdsList = GetValidCharacterIdsList();
@@ -46,7 +45,42 @@ namespace StatBringers
             LastCharacterIdChecked += 30;
             Console.WriteLine("STEP");
 
-            WriteAll();
+            WriteLastCharacterIdChecked(LastCharacterIdChecked);
+            WriteValidCharacterIdsList();
+            WriteCharactersToRecheckList();
+        }
+
+        public void AnalyzeValidCharacterIdsListAsync()
+        {
+            var tasks = new ConcurrentBag<Task>();
+            // Sets the maximum number of concurrent operations according to the number of IDs to check
+            // After checking removes checked 
+            if (CharactersToRecheckIdsList.Count < 30)
+            {
+                Parallel.For(LastCharacterIdReChecked, CharactersToRecheckIdsList.Count, i =>
+                {
+                    tasks.Add(CheckIfCharacterExistsAsync(CharactersToRecheckIdsList[i]));
+                });
+                CharactersToRecheckIdsList.RemoveRange(LastCharacterIdReChecked, CharactersToRecheckIdsList.Count);
+            }
+            else
+            {
+                Parallel.For(LastCharacterIdReChecked, LastCharacterIdReChecked + 30, i =>
+                {
+                    tasks.Add(CheckIfCharacterExistsAsync(CharactersToRecheckIdsList[i]));
+                });
+                CharactersToRecheckIdsList.RemoveRange(LastCharacterIdReChecked, LastCharacterIdReChecked + 30);
+
+            }
+            Task.WaitAll(tasks.ToArray());
+
+            LastCharacterIdChecked += 30;
+
+            //Deletes the old list and create a new one
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            File.Delete(path);
+            WriteValidCharacterIdsList();
+            WriteCombinedCharactersToRecheckList();
         }
 
         private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
@@ -81,24 +115,7 @@ namespace StatBringers
             }
         }
 
-        public void AnalyzeValidCharacterIdsListAsync(List<int> ids)
-        {
-            var tasks = new ConcurrentBag<Task>();
-            Parallel.For(1, 30, i =>
-            {
-                tasks.Add(CheckIfCharacterExistsAsync(ids[i]));
-            });
-            Task.WaitAll(tasks.ToArray());
-        }
-
         #region I/O
-
-        private void WriteAll()
-        {
-            WriteLastCharacterIdChecked(LastCharacterIdChecked);
-            WriteValidCharacterIdsList();
-            WriteCharactersToRecheckList();
-        }
 
         private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
         {
@@ -148,6 +165,15 @@ namespace StatBringers
         private void WriteCharactersToRecheckList()
         {
             var list = CharactersToRecheck.ToList();
+            list.Sort();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            CharactersToRecheck.Clear();
+        }
+
+        private void WriteCombinedCharactersToRecheckList()
+        {
+            var list = CharactersToRecheck.ToList().Concat(CharactersToRecheckIdsList).ToList();
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
