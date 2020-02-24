@@ -83,6 +83,8 @@ namespace StatBringers
             }
         }
 
+        #region I/O
+
         private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
@@ -93,7 +95,6 @@ namespace StatBringers
         private int GetLastCharacterIdChecked()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
-            //var path = $"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt";
             if (File.Exists(path))
             {
                 var output = File.ReadAllText(path);
@@ -103,10 +104,10 @@ namespace StatBringers
             {
                 return 0;
             }
-            
+
         }
 
-        private void WriteValidCharacterIdsList() 
+        private void WriteValidCharacterIdsList()
         {
             var list = ValidCharactersChecked.ToList();
             list.Sort();
@@ -120,9 +121,15 @@ namespace StatBringers
         {
             var output = new List<int>();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
-            output = File.ReadAllLines(path).Select(int.Parse).ToList();
-            //output = File.ReadAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt").Select(int.Parse).ToList();
-            return output;
+            if (File.Exists(path))
+            {
+                output = File.ReadAllLines(path).Select(int.Parse).ToList();
+                return output;
+            }
+            else
+            {
+                return new List<int>();
+            }
         }
 
         private void WriteCharactersToRecheckList()
@@ -138,8 +145,17 @@ namespace StatBringers
         {
             var output = new List<int>();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
-            output = File.ReadAllLines(path).Select(int.Parse).ToList();
-            return output;
+            if (File.Exists(path))
+            {
+                output = File.ReadAllLines(path).Select(int.Parse).ToList();
+                return output;
+            }
+            else
+            {
+                return new List<int>();
+            }
         }
+
+        #endregion
     }
 }
