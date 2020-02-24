@@ -12,9 +12,9 @@ namespace StatBringers
 {
     class Lodestone
     {
-        public int LastCharacterIdChecked { get { return GetLastCharacterIdChecked(); } }
-        public List<int> ValidCharacterIdsList { get { return GetValidCharacterIdsList(); } }
-        public List<int> CharactersToRecheckIdsList { get { return GetCharactersToRecheckIdsList(); } }
+        public int LastCharacterIdChecked { get; set; }
+        public List<int> ValidCharacterIdsList { get; set; }
+        public List<int> CharactersToRecheckIdsList { get ; }
         private readonly HttpClient httpClient;
         private ConcurrentBag<int> ValidCharactersChecked { get; set; }
         private ConcurrentBag<int> CharactersToRecheck { get; set; }
@@ -28,27 +28,25 @@ namespace StatBringers
             };
             ValidCharactersChecked = new ConcurrentBag<int>();
             CharactersToRecheck = new ConcurrentBag<int>();
+
+            LastCharacterIdChecked = GetLastCharacterIdChecked();
+            ValidCharacterIdsList = GetValidCharacterIdsList();
+            CharactersToRecheckIdsList = GetCharactersToRecheckIdsList();
         }
 
         public void Test()
         {
             var tasks = new ConcurrentBag<Task>();
-            var lastId = GetLastCharacterIdChecked();
-            Parallel.For(lastId + 1, lastId + 31, i =>
+            Parallel.For(LastCharacterIdChecked + 1, LastCharacterIdChecked + 31, i =>
             {
                 tasks.Add(CheckIfCharacterExistsAsync(i));
             });
             Task.WaitAll(tasks.ToArray());
             
-            lastId += 30;
+            LastCharacterIdChecked += 30;
             Console.WriteLine("STEP");
 
-            WriteLastCharacterIdChecked(lastId);
-            WriteValidCharacterIdsList();
-            if (!CharactersToRecheck.IsEmpty)
-            {
-                WriteCharactersToRecheckList();
-            }
+            WriteAll();
         }
 
         private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
@@ -83,13 +81,29 @@ namespace StatBringers
             }
         }
 
+        public void AnalyzeValidCharacterIdsListAsync(List<int> ids)
+        {
+            var tasks = new ConcurrentBag<Task>();
+            Parallel.For(1, 30, i =>
+            {
+                tasks.Add(CheckIfCharacterExistsAsync(ids[i]));
+            });
+            Task.WaitAll(tasks.ToArray());
+        }
+
         #region I/O
+
+        private void WriteAll()
+        {
+            WriteLastCharacterIdChecked(LastCharacterIdChecked);
+            WriteValidCharacterIdsList();
+            WriteCharactersToRecheckList();
+        }
 
         private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
             File.WriteAllText(path, LastCharacterIdChecked.ToString());
-            //File.WriteAllText($"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt", LastCharacterIdChecked.ToString());
         }
 
         private int GetLastCharacterIdChecked()
@@ -113,7 +127,6 @@ namespace StatBringers
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
-            //File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", list.Select(x => x.ToString()));
             ValidCharactersChecked.Clear();
         }
 

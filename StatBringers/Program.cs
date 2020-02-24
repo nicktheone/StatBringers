@@ -12,8 +12,6 @@ namespace StatBringers
     {
         static void Main(string[] args)
         {
-            //var lodestone = new Lodestone();
-
             var showMenu = true;
             while (showMenu)
             {
@@ -46,7 +44,8 @@ namespace StatBringers
             Console.WriteLine($"1) Start a valid Character ID scan (last checked: { lodestone.LastCharacterIdChecked })");
             Console.WriteLine("2) Get the list of valid Character IDs");
             Console.WriteLine("3) Get the list of Character IDs to recheck");
-            Console.WriteLine("4) Exit");
+            Console.WriteLine("4) Recheck the list of IDs");
+            Console.WriteLine("5) Exit");
 
             switch (Console.ReadLine())
             {
@@ -94,6 +93,21 @@ namespace StatBringers
                     return true;
 
                 case "4":
+                    Console.WriteLine();
+                    Console.WriteLine("Press ESC to stop");
+                    Console.WriteLine();
+
+                    do
+                    {
+                        while (!Console.KeyAvailable)
+                        {
+                            lodestone.AnalyzeValidCharacterIdsListAsync(lodestone.CharactersToRecheckIdsList);
+                        }
+                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+
+                    return true;
+
+                case "5":
                     Console.WriteLine();
                     return false;
 
