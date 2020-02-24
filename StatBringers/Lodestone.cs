@@ -12,27 +12,21 @@ namespace StatBringers
 {
     class Lodestone
     {
-        /// <TODO>
-        /// Benchmark:
-        /// httpClient.GetStringAsync()
-        /// httpClient.GetAsync()
-        /// httpClient.SendAsync()
-        /// 
-        /// Get a list of unique IDs from Lodestone
-        /// </TODO>
-
         public int LastCharacterIdChecked { get { return GetLastCharacterIdChecked(); } }
         public List<int> ValidCharacterIdsList { get { return GetValidCharacterIdsList(); } }
         private readonly HttpClient httpClient;
         private ConcurrentBag<int> ValidCharactersChecked { get; set; }
+        private ConcurrentBag<int> CharactersToRecheck { get; set; }
 
         public Lodestone()
         {
             httpClient = new HttpClient()
             {
-                BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/")
+                BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/"),
+                Timeout = TimeSpan.FromSeconds(10)
             };
             ValidCharactersChecked = new ConcurrentBag<int>();
+            CharactersToRecheck = new ConcurrentBag<int>();
         }
 
         public void Test()
@@ -44,6 +38,7 @@ namespace StatBringers
                 tasks.Add(CheckIfCharacterExistsAsync(i));
             });
             Task.WaitAll(tasks.ToArray());
+            
             lastId += 30;
             Console.WriteLine("STEP");
 
@@ -61,12 +56,25 @@ namespace StatBringers
         private async Task CheckIfCharacterExistsAsync(int CharacterId)
         {
             string address = $"{ CharacterId }";
-            var result = await httpClient.GetAsync(address);
-            Console.WriteLine($"{ CharacterId } - { result.StatusCode }");
-
-            if (result.StatusCode == HttpStatusCode.OK)
+            try
             {
-                ValidCharactersChecked.Add(CharacterId);
+                var result = await httpClient.GetAsync(address);
+
+                Console.WriteLine($"{ CharacterId } - { result.StatusCode }");
+
+                if (result.StatusCode == HttpStatusCode.OK)
+                {
+                    ValidCharactersChecked.Add(CharacterId);
+                }
+                else if (result.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    CharactersToRecheck.Add(CharacterId);
+                }
+            }
+            catch (Exception)
+            {
+                CharactersToRecheck.Add(CharacterId);
+                Console.WriteLine($"Failed ID: { CharacterId }");
             }
         }
 
