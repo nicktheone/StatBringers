@@ -14,6 +14,7 @@ namespace StatBringers
     {
         public int LastCharacterIdChecked { get { return GetLastCharacterIdChecked(); } }
         public List<int> ValidCharacterIdsList { get { return GetValidCharacterIdsList(); } }
+        public List<int> CharactersToRecheckIdsList { get { return GetCharactersToRecheckIdsList(); } }
         private readonly HttpClient httpClient;
         private ConcurrentBag<int> ValidCharactersChecked { get; set; }
         private ConcurrentBag<int> CharactersToRecheck { get; set; }
@@ -44,6 +45,10 @@ namespace StatBringers
 
             WriteLastCharacterIdChecked(lastId);
             WriteValidCharacterIdsList();
+            if (!CharactersToRecheck.IsEmpty)
+            {
+                WriteCharactersToRecheckList();
+            }
         }
 
         private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
@@ -80,12 +85,15 @@ namespace StatBringers
 
         private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
         {
-            File.WriteAllText($"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt", LastCharacterIdChecked.ToString());
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
+            File.WriteAllText(path, LastCharacterIdChecked.ToString());
+            //File.WriteAllText($"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt", LastCharacterIdChecked.ToString());
         }
 
         private int GetLastCharacterIdChecked()
         {
-            var path = $"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt";
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
+            //var path = $"{ Directory.GetCurrentDirectory() }\\LastCharacterIdChecked.txt";
             if (File.Exists(path))
             {
                 var output = File.ReadAllText(path);
@@ -102,14 +110,35 @@ namespace StatBringers
         {
             var list = ValidCharactersChecked.ToList();
             list.Sort();
-            File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", list.Select(x => x.ToString()));
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            //File.AppendAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt", list.Select(x => x.ToString()));
             ValidCharactersChecked.Clear();
         }
 
         private List<int> GetValidCharacterIdsList()
         {
             var output = new List<int>();
-            output = File.ReadAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt").Select(int.Parse).ToList();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
+            output = File.ReadAllLines(path).Select(int.Parse).ToList();
+            //output = File.ReadAllLines($"{ Directory.GetCurrentDirectory() }\\ValidCharacterIdsList.txt").Select(int.Parse).ToList();
+            return output;
+        }
+
+        private void WriteCharactersToRecheckList()
+        {
+            var list = CharactersToRecheck.ToList();
+            list.Sort();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            CharactersToRecheck.Clear();
+        }
+
+        private List<int> GetCharactersToRecheckIdsList()
+        {
+            var output = new List<int>();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            output = File.ReadAllLines(path).Select(int.Parse).ToList();
             return output;
         }
     }

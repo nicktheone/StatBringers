@@ -45,7 +45,8 @@ namespace StatBringers
             Console.WriteLine("Choose an option:");
             Console.WriteLine($"1) Start a valid Character ID scan (last checked: { lodestone.LastCharacterIdChecked })");
             Console.WriteLine("2) Get the list of valid Character IDs");
-            Console.WriteLine("3) Exit");
+            Console.WriteLine("3) Get the list of Character IDs to recheck");
+            Console.WriteLine("4) Exit");
 
             switch (Console.ReadLine())
             {
@@ -74,9 +75,25 @@ namespace StatBringers
                         Console.WriteLine(item);
                     }
 
+                    Console.WriteLine();
+
                     return true;
 
                 case "3":
+                    Console.WriteLine();
+                    Console.WriteLine("Character IDs to recheck:");
+                    Console.WriteLine();
+
+                    foreach (var item in lodestone.CharactersToRecheckIdsList)
+                    {
+                        Console.WriteLine(item);
+                    }
+
+                    Console.WriteLine();
+
+                    return true;
+
+                case "4":
                     Console.WriteLine();
                     return false;
 
