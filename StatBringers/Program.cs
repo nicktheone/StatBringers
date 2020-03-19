@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StatBringers.Actions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,110 +11,51 @@ namespace StatBringers
 {
     class Program
     {
+        private static List<IAction> MenuItems { get; set; }
         static void Main(string[] args)
         {
-            var showMenu = true;
-            while (showMenu)
-            {
-                showMenu = MainMenu();
-            }
+            PopulateMenu();
+            MainMenu();
+
+            Console.ReadLine();
         }
 
-        private static bool MainMenu()
+        private static void MainMenu()
         {
-            var lodestone = new Lodestone();
+            ShowMenuOptions();
 
-            Console.WriteLine("Choose an option:");
-            Console.WriteLine($"1) Start a valid Character ID scan (last checked: { lodestone.LastCharacterIdChecked })");
-            Console.WriteLine("2) Get the list of valid Character IDs");
-            Console.WriteLine("3) Get the list of Character IDs to recheck");
-            Console.WriteLine($"4) Recheck the list of IDs (remaining IDs: { lodestone.CharactersToRecheckIdsList.Count })");
-            Console.WriteLine("5) Exit");
-
-            switch (Console.ReadLine())
+            // Loops until valid input is given
+            do
             {
-                case "1":
-                    Console.WriteLine();
-                    Console.WriteLine("Press ESC to stop");
-                    Console.WriteLine();
+                Console.WriteLine($"Choose an option between 1 and { MenuItems.Count }");
+            } while (!int.TryParse(Console.ReadLine(), out int input) || input < 1 || input > MenuItems.Count);
+        }
 
-                    do
-                    {
-                        while (!Console.KeyAvailable)
-                        {
-                            lodestone.Test();
-                        }
-                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+        // List containing all the menu item to be displayed
+        // Used to populate a list in the start up process
+        private static void PopulateMenu()
+        {
+            var actions = new List<IAction>
+            {
+                new ValidScan(),
+                new RecheckScan(),
+                new ValidList(),
+                new RecheckList(),
+                new Exit()
+            };
 
-                    Console.WriteLine();
+            MenuItems = actions;
+        }
 
-                    return true;
-
-                case "2":
-                    Console.WriteLine();
-                    Console.WriteLine("Valid Character IDs:");
-                    Console.WriteLine();
-
-                    foreach (var item in lodestone.ValidCharacterIdsList)
-                    {
-                        Console.WriteLine(item);
-                    }
-
-                    Console.WriteLine();
-
-                    return true;
-
-                case "3":
-                    Console.WriteLine();
-                    Console.WriteLine("Character IDs to recheck:");
-                    Console.WriteLine();
-
-                    foreach (var item in lodestone.CharactersToRecheckIdsList)
-                    {
-                        Console.WriteLine(item);
-                    }
-
-                    Console.WriteLine();
-
-                    return true;
-
-                case "4":
-                    Console.WriteLine();
-                    Console.WriteLine("Press ESC to stop");
-                    Console.WriteLine();
-
-                    do
-                    {
-                        while (!Console.KeyAvailable)
-                        {
-                            if (lodestone.CharactersToRecheckIdsList.Count > 0)
-                            {
-                                lodestone.AnalyzeValidCharacterIdsListAsync();
-                            }
-                            else
-                            {
-                                Console.WriteLine();
-                                Console.WriteLine("No IDs to recheck");
-                                Console.WriteLine();
-                                return true;
-                            }
-                        }
-                    } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
-
-                    Console.WriteLine();
-                    return true;
-
-                case "5":
-                    Console.WriteLine();
-                    return false;
-
-                default:
-                    Console.WriteLine();
-                    Console.WriteLine("No valid option selected");
-                    Console.WriteLine();
-
-                    return true;
+        // Prints out every item contained in the menu list
+        private static void ShowMenuOptions()
+        {
+            for (int i = 0; i < MenuItems.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}) {MenuItems[i].Description}");
             }
+
+            Console.WriteLine();
         }
     }
 }
