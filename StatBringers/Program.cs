@@ -78,18 +78,17 @@ namespace StatBringers
                     return true;
 
                 case "4":
+                    Console.WriteLine();
+                    Console.WriteLine("Press ESC to stop");
+                    Console.WriteLine();
+
                     do
                     {
                         while (!Console.KeyAvailable)
                         {
                             if (lodestone.CharactersToRecheckIdsList.Count > 0)
                             {
-                                Console.WriteLine();
-                                Console.WriteLine("Press ESC to stop");
-                                Console.WriteLine();
-
                                 lodestone.AnalyzeValidCharacterIdsListAsync();
-                                return true;
                             }
                             else
                             {
@@ -101,6 +100,7 @@ namespace StatBringers
                         }
                     } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
 
+                    Console.WriteLine();
                     return true;
 
                 case "5":

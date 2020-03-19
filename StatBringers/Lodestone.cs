@@ -8,6 +8,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// https://softwareengineering.stackexchange.com/questions/405630/how-to-approach-a-large-number-of-multiple-parallel-httpclient-requests/405733#405733
+/// </summary>
+
 namespace StatBringers
 {
     class Lodestone
@@ -111,7 +115,7 @@ namespace StatBringers
             catch (Exception)
             {
                 CharactersToRecheck.Add(CharacterId);
-                Console.WriteLine($"Failed ID: { CharacterId }");
+                Console.WriteLine($"{ CharacterId } - Failed");
             }
         }
 
@@ -173,7 +177,8 @@ namespace StatBringers
 
         private void WriteCombinedCharactersToRecheckList()
         {
-            var list = CharactersToRecheck.ToList().Concat(CharactersToRecheckIdsList).ToList();
+            var list = CharactersToRecheck.ToList();
+            list.AddRange(CharactersToRecheckIdsList);
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
