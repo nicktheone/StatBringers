@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace StatBringers.Actions
 {
@@ -10,6 +8,9 @@ namespace StatBringers.Actions
 
         public void Do()
         {
+            Console.WriteLine();
+            Console.WriteLine("Press any to key to exit");
+            Console.ReadLine();
             Environment.Exit(0);
         }
     }

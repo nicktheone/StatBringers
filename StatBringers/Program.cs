@@ -1,17 +1,14 @@
 ﻿using StatBringers.Actions;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace StatBringers
 {
     class Program
     {
         private static List<IAction> MenuItems { get; set; }
+        public Lodestone Lodestone { get; set; } = new Lodestone();
+
         static void Main(string[] args)
         {
             PopulateMenu();
@@ -24,11 +21,14 @@ namespace StatBringers
         {
             ShowMenuOptions();
 
+            int input;
             // Loops until valid input is given
             do
             {
                 Console.WriteLine($"Choose an option between 1 and { MenuItems.Count }");
-            } while (!int.TryParse(Console.ReadLine(), out int input) || input < 1 || input > MenuItems.Count);
+            } while (!int.TryParse(Console.ReadLine(), out input) || input < 1 || input > MenuItems.Count);
+
+            MenuItems[input - 1].Do();
         }
 
         // List containing all the menu item to be displayed
