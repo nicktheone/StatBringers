@@ -7,7 +7,7 @@ namespace StatBringers
     class Program
     {
         private static List<IAction> MenuItems { get; set; }
-        public Lodestone Lodestone { get; set; } = new Lodestone();
+        public static Lodestone Lodestone { get; set; } = new Lodestone();
 
         static void Main(string[] args)
         {

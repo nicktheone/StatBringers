@@ -4,7 +4,7 @@ namespace StatBringers.Actions
 {
     class ValidScan : IAction
     {
-        public string Description { get; } = "Start a valid Character ID scan (last checked: )";
+        public string Description { get; } = $"Start a valid Character ID scan (last checked: {Program.Lodestone.LastCharacterIdChecked})";
 
         public void Do()
         {

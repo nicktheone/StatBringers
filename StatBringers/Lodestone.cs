@@ -106,7 +106,7 @@ namespace StatBringers
                 {
                     ValidCharactersChecked.Add(CharacterId);
                 }
-                else if (result.StatusCode == HttpStatusCode.TooManyRequests)
+                else
                 {
                     CharactersToRecheck.Add(CharacterId);
                 }
