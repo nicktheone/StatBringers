@@ -4,7 +4,7 @@ namespace StatBringers.Actions
 {
     class RecheckScan : IAction
     {
-        public string Description { get; } = "Recheck the list of IDs (remaining IDs: )";
+        public string Description { get; } = "Recheck the list of IDs";
 
         public void Do()
         {

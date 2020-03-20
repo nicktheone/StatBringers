@@ -17,7 +17,7 @@ namespace StatBringers
     {
         public int LastCharacterIdChecked { get; set; }
         public List<int> ValidCharacterIdsList { get; set; }
-        public List<int> CharactersToRecheckIdsList { get ; }
+        public List<int> RecheckCharacterIdsList { get ; }
         private readonly HttpClient httpClient;
         private int LastCharacterIdReChecked { get; set; }
         private ConcurrentBag<int> ValidCharactersChecked { get; set; } = new ConcurrentBag<int>();
@@ -33,7 +33,7 @@ namespace StatBringers
 
             LastCharacterIdChecked = GetLastCharacterIdChecked();
             ValidCharacterIdsList = GetValidCharacterIdsList();
-            CharactersToRecheckIdsList = GetCharactersToRecheckIdsList();
+            RecheckCharacterIdsList = GetCharactersToRecheckIdsList();
         }
 
         public void Test()
@@ -58,21 +58,21 @@ namespace StatBringers
             var tasks = new ConcurrentBag<Task>();
             // Sets the maximum number of concurrent operations according to the number of IDs to check
             // After checking removes checked 
-            if (CharactersToRecheckIdsList.Count < 30)
+            if (RecheckCharacterIdsList.Count < 30)
             {
-                Parallel.For(LastCharacterIdReChecked, CharactersToRecheckIdsList.Count, i =>
+                Parallel.For(LastCharacterIdReChecked, RecheckCharacterIdsList.Count, i =>
                 {
-                    tasks.Add(CheckIfCharacterExistsAsync(CharactersToRecheckIdsList[i]));
+                    tasks.Add(CheckIfCharacterExistsAsync(RecheckCharacterIdsList[i]));
                 });
-                CharactersToRecheckIdsList.RemoveRange(LastCharacterIdReChecked, CharactersToRecheckIdsList.Count);
+                RecheckCharacterIdsList.RemoveRange(LastCharacterIdReChecked, RecheckCharacterIdsList.Count);
             }
             else
             {
                 Parallel.For(LastCharacterIdReChecked, LastCharacterIdReChecked + 30, i =>
                 {
-                    tasks.Add(CheckIfCharacterExistsAsync(CharactersToRecheckIdsList[i]));
+                    tasks.Add(CheckIfCharacterExistsAsync(RecheckCharacterIdsList[i]));
                 });
-                CharactersToRecheckIdsList.RemoveRange(LastCharacterIdReChecked, LastCharacterIdReChecked + 30);
+                RecheckCharacterIdsList.RemoveRange(LastCharacterIdReChecked, LastCharacterIdReChecked + 30);
 
             }
             Task.WaitAll(tasks.ToArray());
@@ -120,12 +120,6 @@ namespace StatBringers
 
         #region I/O
 
-        private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
-        {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
-            File.WriteAllText(path, LastCharacterIdChecked.ToString());
-        }
-
         private int GetLastCharacterIdChecked()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
@@ -139,15 +133,6 @@ namespace StatBringers
                 return 0;
             }
 
-        }
-
-        private void WriteValidCharacterIdsList()
-        {
-            var list = ValidCharactersChecked.ToList();
-            list.Sort();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
-            File.AppendAllLines(path, list.Select(x => x.ToString()));
-            ValidCharactersChecked.Clear();
         }
 
         private List<int> GetValidCharacterIdsList()
@@ -165,25 +150,6 @@ namespace StatBringers
             }
         }
 
-        private void WriteCharactersToRecheckList()
-        {
-            var list = CharactersToRecheck.ToList();
-            list.Sort();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
-            File.AppendAllLines(path, list.Select(x => x.ToString()));
-            CharactersToRecheck.Clear();
-        }
-
-        private void WriteCombinedCharactersToRecheckList()
-        {
-            var list = CharactersToRecheck.ToList();
-            list.AddRange(CharactersToRecheckIdsList);
-            list.Sort();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
-            File.AppendAllLines(path, list.Select(x => x.ToString()));
-            CharactersToRecheck.Clear();
-        }
-
         private List<int> GetCharactersToRecheckIdsList()
         {
             var output = new List<int>();
@@ -197,6 +163,40 @@ namespace StatBringers
             {
                 return new List<int>();
             }
+        }
+
+        private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
+            File.WriteAllText(path, LastCharacterIdChecked.ToString());
+        }
+
+        private void WriteValidCharacterIdsList()
+        {
+            var list = ValidCharactersChecked.ToList();
+            list.Sort();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            ValidCharactersChecked.Clear();
+        }
+
+        private void WriteCharactersToRecheckList()
+        {
+            var list = CharactersToRecheck.ToList();
+            list.Sort();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            CharactersToRecheck.Clear();
+        }
+
+        private void WriteCombinedCharactersToRecheckList()
+        {
+            var list = CharactersToRecheck.ToList();
+            list.AddRange(RecheckCharacterIdsList);
+            list.Sort();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            File.AppendAllLines(path, list.Select(x => x.ToString()));
+            CharactersToRecheck.Clear();
         }
 
         #endregion

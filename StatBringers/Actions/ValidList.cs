@@ -4,7 +4,7 @@ namespace StatBringers.Actions
 {
     class ValidList : IAction
     {
-        public string Description { get; } = "Get the list of valid Character IDs";
+        public string Description { get; } = $"Get the list of valid Character IDs (total: { Program.Lodestone.ValidCharacterIdsList.Count })";
 
         public void Do()
         {
@@ -12,10 +12,10 @@ namespace StatBringers.Actions
             Console.WriteLine("Valid Character IDs:");
             Console.WriteLine();
 
-            //foreach (var item in lodestone.ValidCharacterIdsList)
-            //{
-            //    Console.WriteLine(item);
-            //}
+            foreach (var item in Program.Lodestone.ValidCharacterIdsList)
+            {
+                Console.WriteLine(item);
+            }
 
             Console.WriteLine();
         }
