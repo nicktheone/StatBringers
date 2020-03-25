@@ -39,8 +39,6 @@ namespace StatBringers
             {
                 new ValidScan(),
                 new RecheckScan(),
-                new ValidList(),
-                new RecheckList(),
                 new Exit()
             };
 
