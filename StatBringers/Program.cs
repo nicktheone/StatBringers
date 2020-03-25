@@ -17,12 +17,12 @@ namespace StatBringers
             Console.ReadLine();
         }
 
-        private static void MainMenu()
+        // Loops until valid input is given
+        public static void MainMenu()
         {
             ShowMenuOptions();
 
             int input;
-            // Loops until valid input is given
             do
             {
                 Console.WriteLine($"Choose an option between 1 and { MenuItems.Count }");

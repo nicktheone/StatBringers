@@ -18,6 +18,10 @@ namespace StatBringers.Actions
             }
 
             Console.WriteLine();
+            Console.ReadLine();
+
+            //Returns to the menu
+            Program.MainMenu();
         }
     }
 }

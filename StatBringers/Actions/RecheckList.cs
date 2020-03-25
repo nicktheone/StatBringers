@@ -12,12 +12,16 @@ namespace StatBringers.Actions
             Console.WriteLine("Character IDs to recheck:");
             Console.WriteLine();
 
-            //foreach (var item in lodestone.CharactersToRecheckIdsList)
-            //{
-            //    Console.WriteLine(item);
-            //}
+            foreach (var item in Program.Lodestone.RecheckCharacterIdsList)
+            {
+                Console.WriteLine(item);
+            }
 
             Console.WriteLine();
+            Console.ReadLine();
+
+            //Returns to the menu
+            Program.MainMenu();
         }
     }
 }

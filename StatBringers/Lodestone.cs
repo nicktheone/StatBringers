@@ -33,7 +33,7 @@ namespace StatBringers
 
             LastCharacterIdChecked = GetLastCharacterIdChecked();
             ValidCharacterIdsList = GetValidCharacterIdsList();
-            RecheckCharacterIdsList = GetCharactersToRecheckIdsList();
+            RecheckCharacterIdsList = GetRecheckCharacterIdsList();
         }
 
         public void Test()
@@ -50,7 +50,7 @@ namespace StatBringers
 
             WriteLastCharacterIdChecked(LastCharacterIdChecked);
             WriteValidCharacterIdsList();
-            WriteCharactersToRecheckList();
+            WriteRecheckCharacterIdsList();
         }
 
         public void AnalyzeValidCharacterIdsListAsync()
@@ -83,14 +83,7 @@ namespace StatBringers
             var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
             File.Delete(path);
             WriteValidCharacterIdsList();
-            WriteCombinedCharactersToRecheckList();
-        }
-
-        private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
-        {
-            string address = $"{ CharacterId }/{ page }";
-            var content = httpClient.GetStringAsync(address);
-            return await content;
+            WriteCombinedRecheckCharacterIdsList();
         }
 
         private async Task CheckIfCharacterExistsAsync(int CharacterId)
@@ -118,8 +111,18 @@ namespace StatBringers
             }
         }
 
+        private async Task<string> GetCharacterInfoAsync(int CharacterId, string page)
+        {
+            string address = $"{ CharacterId }/{ page }";
+            var content = httpClient.GetStringAsync(address);
+            return await content;
+        }
+
+
         #region I/O
 
+        // Gets the last character checked
+        // Returns 0 if missing file
         private int GetLastCharacterIdChecked()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
@@ -135,6 +138,8 @@ namespace StatBringers
 
         }
 
+        // Gets the list of valid IDs
+        // Returns an empty list if missing file
         private List<int> GetValidCharacterIdsList()
         {
             var output = new List<int>();
@@ -150,10 +155,12 @@ namespace StatBringers
             }
         }
 
-        private List<int> GetCharactersToRecheckIdsList()
+        // Gets the list of IDs to recheck
+        // Returns an empty list if missing file
+        private List<int> GetRecheckCharacterIdsList()
         {
             var output = new List<int>();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "RecheckCharacterIdsList.txt");
             if (File.Exists(path))
             {
                 output = File.ReadAllLines(path).Select(int.Parse).ToList();
@@ -165,12 +172,14 @@ namespace StatBringers
             }
         }
 
+        // Writes the last character checked
         private void WriteLastCharacterIdChecked(int LastCharacterIdChecked)
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
             File.WriteAllText(path, LastCharacterIdChecked.ToString());
         }
 
+        // Writes the list of valid IDs
         private void WriteValidCharacterIdsList()
         {
             var list = ValidCharactersChecked.ToList();
@@ -180,16 +189,17 @@ namespace StatBringers
             ValidCharactersChecked.Clear();
         }
 
-        private void WriteCharactersToRecheckList()
+        // Writes the list of IDs to recheck
+        private void WriteRecheckCharacterIdsList()
         {
             var list = CharactersToRecheck.ToList();
             list.Sort();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "RecheckCharacterIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
             CharactersToRecheck.Clear();
         }
 
-        private void WriteCombinedCharactersToRecheckList()
+        private void WriteCombinedRecheckCharacterIdsList()
         {
             var list = CharactersToRecheck.ToList();
             list.AddRange(RecheckCharacterIdsList);
