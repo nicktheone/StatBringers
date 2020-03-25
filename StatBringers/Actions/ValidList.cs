@@ -4,7 +4,7 @@ namespace StatBringers.Actions
 {
     class ValidList : IAction
     {
-        public string Description { get; } = $"Get the list of valid Character IDs (total: { Program.Lodestone.ValidCharacterIdsList.Count })";
+        public string Description { get; } = $"Get the list of valid Character IDs)";
 
         public void Do()
         {

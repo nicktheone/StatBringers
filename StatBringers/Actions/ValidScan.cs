@@ -13,13 +13,15 @@ namespace StatBringers.Actions
             Console.WriteLine("Press ESC to stop");
             Console.WriteLine();
 
-            do
-            {
-                while (!Console.KeyAvailable)
-                {
-                    Program.Lodestone.Test();
-                }
-            } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+            //do
+            //{
+            //    while (!Console.KeyAvailable)
+            //    {
+            //        Program.Lodestone.TestAsync();
+            //    }
+            //} while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+
+            Program.Lodestone.Test();
 
             Console.WriteLine();
             Console.ReadLine();

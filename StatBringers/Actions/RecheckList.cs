@@ -4,7 +4,7 @@ namespace StatBringers.Actions
 {
     class RecheckList : IAction 
     {
-        public string Description { get; } = $"Get the list of Character IDs to recheck (total: { Program.Lodestone.RecheckCharacterIdsList.Count })";
+        public string Description { get; } = $"Get the list of Character IDs to recheck";
 
         public void Do()
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
@@ -20,8 +21,8 @@ namespace StatBringers
         public List<int> RecheckCharacterIdsList { get ; }
         private readonly HttpClient httpClient;
         private int LastCharacterIdReChecked { get; set; }
-        private ConcurrentBag<int> ValidCharactersChecked { get; set; } = new ConcurrentBag<int>();
-        private ConcurrentBag<int> CharactersToRecheck { get; set; } = new ConcurrentBag<int>();
+        private ConcurrentBag<int> ValidCharacterIdsBag { get; set; }
+        private ConcurrentBag<int> RecheckCharacterIdsBag { get; set; }
 
         public Lodestone()
         {
@@ -32,8 +33,10 @@ namespace StatBringers
             };
 
             LastCharacterIdChecked = GetLastCharacterIdChecked();
-            ValidCharacterIdsList = GetValidCharacterIdsList();
-            RecheckCharacterIdsList = GetRecheckCharacterIdsList();
+            ValidCharacterIdsList = new List<int>();
+            RecheckCharacterIdsList = new List<int>();
+            ValidCharacterIdsBag = new ConcurrentBag<int>();
+            RecheckCharacterIdsBag = new ConcurrentBag<int>();
         }
 
         public void Test()
@@ -44,13 +47,31 @@ namespace StatBringers
                 tasks.Add(CheckIfCharacterExistsAsync(i));
             });
             Task.WaitAll(tasks.ToArray());
-            
+
+            //var semaphore = new SemaphoreSlim(30);
+            //var tasks = new List<Task>();
+            //for (int i = LastCharacterIdChecked + 1; i < LastCharacterIdChecked + 31; i++)
+            //{
+            //    await semaphore.WaitAsync();
+            //    try
+            //    {
+            //        tasks.Add(CheckIfCharacterExistsAsync(i));
+            //    }
+            //    finally
+            //    {
+            //        semaphore.Release();
+            //    }
+            //}
+            //await Task.WhenAll(tasks);
+
             LastCharacterIdChecked += 30;
             Console.WriteLine("STEP");
 
             WriteLastCharacterIdChecked(LastCharacterIdChecked);
             WriteValidCharacterIdsList();
             WriteRecheckCharacterIdsList();
+
+
         }
 
         public void AnalyzeValidCharacterIdsListAsync()
@@ -97,16 +118,16 @@ namespace StatBringers
 
                 if (result.StatusCode == HttpStatusCode.OK)
                 {
-                    ValidCharactersChecked.Add(CharacterId);
+                    ValidCharacterIdsBag.Add(CharacterId);
                 }
                 else
                 {
-                    CharactersToRecheck.Add(CharacterId);
+                    RecheckCharacterIdsBag.Add(CharacterId);
                 }
             }
             catch (Exception)
             {
-                CharactersToRecheck.Add(CharacterId);
+                RecheckCharacterIdsBag.Add(CharacterId);
                 Console.WriteLine($"{ CharacterId } - Failed");
             }
         }
@@ -182,31 +203,31 @@ namespace StatBringers
         // Writes the list of valid IDs
         private void WriteValidCharacterIdsList()
         {
-            var list = ValidCharactersChecked.ToList();
+            var list = ValidCharacterIdsBag.ToList();
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
-            ValidCharactersChecked.Clear();
+            ValidCharacterIdsBag.Clear();
         }
 
         // Writes the list of IDs to recheck
         private void WriteRecheckCharacterIdsList()
         {
-            var list = CharactersToRecheck.ToList();
+            var list = RecheckCharacterIdsBag.ToList();
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "RecheckCharacterIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
-            CharactersToRecheck.Clear();
+            RecheckCharacterIdsBag.Clear();
         }
 
         private void WriteCombinedRecheckCharacterIdsList()
         {
-            var list = CharactersToRecheck.ToList();
+            var list = RecheckCharacterIdsBag.ToList();
             list.AddRange(RecheckCharacterIdsList);
             list.Sort();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "CharactersToRecheckIdsList.txt");
             File.AppendAllLines(path, list.Select(x => x.ToString()));
-            CharactersToRecheck.Clear();
+            RecheckCharacterIdsBag.Clear();
         }
 
         #endregion
