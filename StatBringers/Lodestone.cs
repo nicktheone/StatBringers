@@ -16,13 +16,13 @@ namespace StatBringers
 {
     class Lodestone
     {
-        public int LastCharacterIdChecked { get; set; }
-        public List<int> ValidCharacterIdsList { get; set; }
-        public List<int> RecheckCharacterIdsList { get ; }
-        private readonly HttpClient httpClient;
+        public int LastCharacterIdChecked { get; set; } = GetLastCharacterIdChecked();
+        public List<int> ValidCharacterIdsList { get; set; } = GetValidCharacterIdsList();
+        public List<int> RecheckCharacterIdsList { get; } = GetRecheckCharacterIdsList();
+        private readonly HttpClient httpClient; 
         private int LastCharacterIdReChecked { get; set; }
-        private ConcurrentBag<int> ValidCharacterIdsBag { get; set; }
-        private ConcurrentBag<int> RecheckCharacterIdsBag { get; set; }
+        private ConcurrentBag<int> ValidCharacterIdsBag { get; set; } = new ConcurrentBag<int>();
+        private ConcurrentBag<int> RecheckCharacterIdsBag { get; set; } = new ConcurrentBag<int>();
 
         public Lodestone()
         {
@@ -31,12 +31,6 @@ namespace StatBringers
                 BaseAddress = new Uri("https://eu.finalfantasyxiv.com/lodestone/character/"),
                 Timeout = TimeSpan.FromSeconds(10)
             };
-
-            LastCharacterIdChecked = GetLastCharacterIdChecked();
-            ValidCharacterIdsList = new List<int>();
-            RecheckCharacterIdsList = new List<int>();
-            ValidCharacterIdsBag = new ConcurrentBag<int>();
-            RecheckCharacterIdsBag = new ConcurrentBag<int>();
         }
 
         public void Test()
@@ -48,30 +42,13 @@ namespace StatBringers
             });
             Task.WaitAll(tasks.ToArray());
 
-            //var semaphore = new SemaphoreSlim(30);
-            //var tasks = new List<Task>();
-            //for (int i = LastCharacterIdChecked + 1; i < LastCharacterIdChecked + 31; i++)
-            //{
-            //    await semaphore.WaitAsync();
-            //    try
-            //    {
-            //        tasks.Add(CheckIfCharacterExistsAsync(i));
-            //    }
-            //    finally
-            //    {
-            //        semaphore.Release();
-            //    }
-            //}
-            //await Task.WhenAll(tasks);
-
             LastCharacterIdChecked += 30;
-            Console.WriteLine("STEP");
 
             WriteLastCharacterIdChecked(LastCharacterIdChecked);
             WriteValidCharacterIdsList();
             WriteRecheckCharacterIdsList();
 
-
+            Console.WriteLine("STEP");
         }
 
         public void AnalyzeValidCharacterIdsListAsync()
@@ -120,7 +97,7 @@ namespace StatBringers
                 {
                     ValidCharacterIdsBag.Add(CharacterId);
                 }
-                else
+                else if (result.StatusCode != HttpStatusCode.NotFound)
                 {
                     RecheckCharacterIdsBag.Add(CharacterId);
                 }
@@ -144,7 +121,7 @@ namespace StatBringers
 
         // Gets the last character checked
         // Returns 0 if missing file
-        private int GetLastCharacterIdChecked()
+        private static int GetLastCharacterIdChecked()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "LastCharacterIdChecked.txt");
             if (File.Exists(path))
@@ -161,7 +138,7 @@ namespace StatBringers
 
         // Gets the list of valid IDs
         // Returns an empty list if missing file
-        private List<int> GetValidCharacterIdsList()
+        private static List<int> GetValidCharacterIdsList()
         {
             var output = new List<int>();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "ValidCharacterIdsList.txt");
@@ -178,7 +155,7 @@ namespace StatBringers
 
         // Gets the list of IDs to recheck
         // Returns an empty list if missing file
-        private List<int> GetRecheckCharacterIdsList()
+        private static List<int> GetRecheckCharacterIdsList()
         {
             var output = new List<int>();
             var path = Path.Combine(Directory.GetCurrentDirectory(), "RecheckCharacterIdsList.txt");
